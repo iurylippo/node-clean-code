@@ -24,7 +24,7 @@ class HttpResponse {
     }
   }
 
-  static serverRequest (paramName) {
+  static serverRequest () {
     return {
       statusCode: 500
     }
