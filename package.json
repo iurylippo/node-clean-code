@@ -5,7 +5,11 @@
   "license": "MIT",
   "scripts": {
     "prepare": "husky install",
-    "test": "jest"
+    "test": "jest",
+    "test:staged": "jest"
+  },
+  "standard": {
+    "env": ["jest"]
   },
   "devDependencies": {
     "husky": "^8.0.3",
