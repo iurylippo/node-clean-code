@@ -1,6 +1,13 @@
 module.exports = {
   coverageProvider: 'v8',
   testEnvironment: 'node',
-  testMatch: ['**/src/**/*.spec.(js|ts)'],
-  testPathIgnorePatterns: ['/node_modules/']
+  rootDir: 'src',
+  testRegex: '.*\\.spec\\.js$',
+  testPathIgnorePatterns: ['/node_modules/'],
+  bail: true,
+  clearMocks: true,
+  collectCoverage: false,
+  collectCoverageFrom: ['**/*.(t|j)s'],
+  coverageDirectory: '../coverage',
+  coverageReporters: ['text-summary', 'lcov']
 }

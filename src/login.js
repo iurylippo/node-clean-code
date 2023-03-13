@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-module.exports = () => {
+export const login = () => {
   const router = new SignUpRouter()
   router.post('/signup', ExpressRouterAdapter.adapt(router))
 }
