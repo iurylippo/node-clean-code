@@ -1,5 +1,5 @@
 module.exports = {
-  coverageProvider: 'v8',
+  coverageProvider: 'babel',
   testEnvironment: 'node',
   rootDir: 'src',
   testRegex: '.*\\.spec\\.js$',
