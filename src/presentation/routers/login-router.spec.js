@@ -4,11 +4,9 @@ import { LoginRouter } from './login-router'
 
 const makeSut = () => {
   class AuthUseCaseSpy {
-    auth (email, password) {
-      this.email = email
-      this.password = password
-    }
+    auth = jest.fn()
   }
+
   const authUseCaseSpy = new AuthUseCaseSpy()
   const sut = new LoginRouter(authUseCaseSpy)
 
@@ -71,8 +69,7 @@ describe('Login Router', () => {
     }
     sut.route(httpRequest)
 
-    expect(authUseCaseSpy.email).toBe(httpRequest.body.email)
-    expect(authUseCaseSpy.password).toBe(httpRequest.body.password)
+    expect(authUseCaseSpy.auth).toBeCalledWith(httpRequest.body.email, httpRequest.body.password)
   })
 
   it('Should return 401 when invalide credentials is provided', () => {
