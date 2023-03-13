@@ -4,11 +4,14 @@ import { LoginRouter } from './login-router'
 
 const makeSut = () => {
   class AuthUseCaseSpy {
-    auth = jest.fn()
+    auth = jest.fn(() => {
+      return this.accessToken
+    })
   }
 
   const authUseCaseSpy = new AuthUseCaseSpy()
   const sut = new LoginRouter(authUseCaseSpy)
+  authUseCaseSpy.accessToken = 'valid_token'
 
   return {
     authUseCaseSpy,
@@ -73,7 +76,8 @@ describe('Login Router', () => {
   })
 
   it('Should return 401 when invalide credentials is provided', () => {
-    const { sut } = makeSut()
+    const { sut, authUseCaseSpy } = makeSut()
+    authUseCaseSpy.accessToken = null
     const httpRequest = {
       body: {
         email: 'invalid_test@email.com',
@@ -114,5 +118,20 @@ describe('Login Router', () => {
     const httpResponse = sut.route(httpRequest)
 
     expect(httpResponse.statusCode).toBe(500)
+  })
+
+  it('Should return 200 when valid credentials is provided', () => {
+    const { sut } = makeSut()
+
+    const httpRequest = {
+      body: {
+        email: 'valid_test@email.com',
+        password: 'valid_pass'
+      }
+
+    }
+    const httpResponse = sut.route(httpRequest)
+
+    expect(httpResponse.statusCode).toBe(200)
   })
 })
