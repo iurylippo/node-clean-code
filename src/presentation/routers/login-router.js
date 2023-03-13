@@ -26,6 +26,6 @@ export class LoginRouter {
       return HttpResponse.unauthorizedError('password')
     }
 
-    return HttpResponse.ok()
+    return HttpResponse.ok({ accessToken })
   }
 }
