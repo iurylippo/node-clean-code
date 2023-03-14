@@ -2,7 +2,7 @@ module.exports = {
   coverageProvider: 'babel',
   testEnvironment: 'node',
   rootDir: 'src',
-  testRegex: '.*\\.spec\\.js$',
+  testRegex: ['.*\\.spec\\.js$', '.*\\.e2e-spec\\.js$'],
   testPathIgnorePatterns: ['/node_modules/'],
   bail: true,
   clearMocks: true,
