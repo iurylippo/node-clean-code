@@ -2,12 +2,12 @@ module.exports = {
   coverageProvider: 'babel',
   testEnvironment: 'node',
   rootDir: 'src',
-  testRegex: ['.*\\.spec\\.js$', '.*\\.e2e-spec\\.js$'],
+  testRegex: '.*\\.(spec|e2e-spec)\\.js$',
   testPathIgnorePatterns: ['/node_modules/'],
   bail: true,
   clearMocks: true,
   collectCoverage: false,
-  collectCoverageFrom: ['**/*.(t|j)s'],
+  collectCoverageFrom: ['**/*.js'],
   coverageDirectory: '../coverage',
   coverageReporters: ['text-summary', 'lcov']
 }
