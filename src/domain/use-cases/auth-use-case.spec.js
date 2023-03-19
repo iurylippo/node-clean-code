@@ -1,13 +1,18 @@
 import { MissingParamError } from '../../utils/errors/missing-param-error'
 import { AuthUseCase } from './auth-use-case'
 
-const makeSut = () => {
+const makeEncrypter = () => {
   class EncrypterSpy {
     async compare (password, hashedPassword) {
-      return null
+      return true
     }
   }
 
+  const encrypterSpy = new EncrypterSpy()
+  return encrypterSpy
+}
+
+const makeLoadUserByEmailRepository = () => {
   class LoadUserByEmailRepositorySpy {
     user = { email: 'valid_email@email', password: 'hashed_pass' }
     async load (email) {
@@ -16,7 +21,12 @@ const makeSut = () => {
   }
 
   const loadUserByEmailRepositorySpy = new LoadUserByEmailRepositorySpy()
-  const encrypterSpy = new EncrypterSpy()
+  return loadUserByEmailRepositorySpy
+}
+
+const makeSut = () => {
+  const encrypterSpy = makeEncrypter()
+  const loadUserByEmailRepositorySpy = makeLoadUserByEmailRepository()
 
   const sut = new AuthUseCase(loadUserByEmailRepositorySpy, encrypterSpy)
 
