@@ -1,8 +1,9 @@
 import { MissingParamError } from '../../utils/errors/missing-param-error'
 
 export class AuthUseCase {
-  constructor (loadUserByEmailRepository) {
+  constructor (loadUserByEmailRepository, encrypter) {
     this.loadUserByEmailRepository = loadUserByEmailRepository
+    this.encrypter = encrypter
   }
 
   async auth (email, password) {
@@ -19,6 +20,8 @@ export class AuthUseCase {
     if (!user) {
       return null
     }
+
+    await this.encrypter.compare(password, user.password)
 
     return null
   }

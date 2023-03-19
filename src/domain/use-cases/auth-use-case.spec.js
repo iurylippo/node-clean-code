@@ -2,17 +2,28 @@ import { MissingParamError } from '../../utils/errors/missing-param-error'
 import { AuthUseCase } from './auth-use-case'
 
 const makeSut = () => {
+  class EncrypterSpy {
+    async compare (password, hashedPassword) {
+      return null
+    }
+  }
+
   class LoadUserByEmailRepositorySpy {
-    load = jest.fn(async () => null)
+    user = { email: 'valid_email@email', password: 'hashed_pass' }
+    async load (email) {
+      return this.user
+    }
   }
 
   const loadUserByEmailRepositorySpy = new LoadUserByEmailRepositorySpy()
+  const encrypterSpy = new EncrypterSpy()
 
-  const sut = new AuthUseCase(loadUserByEmailRepositorySpy)
+  const sut = new AuthUseCase(loadUserByEmailRepositorySpy, encrypterSpy)
 
   return {
     sut,
-    loadUserByEmailRepositorySpy
+    loadUserByEmailRepositorySpy,
+    encrypterSpy
   }
 }
 
@@ -33,6 +44,8 @@ describe('Auth UseCase', () => {
 
   it('Should call loadUserByEmailRepository with correct email', async () => {
     const { sut, loadUserByEmailRepositorySpy } = makeSut()
+    jest.spyOn(loadUserByEmailRepositorySpy, 'load').mockImplementation(jest.fn(async () => null))
+
     const email = 'any_email@email'
     await sut.auth(email, 'pass')
 
@@ -58,7 +71,8 @@ describe('Auth UseCase', () => {
   })
 
   it('Should return null if an invalid email is provided', async () => {
-    const { sut } = makeSut()
+    const { sut, loadUserByEmailRepositorySpy } = makeSut()
+    jest.spyOn(loadUserByEmailRepositorySpy, 'load').mockImplementation(jest.fn(async () => null))
 
     const email = 'invalid_email@email'
     const accessToken = await sut.auth(email, 'pass')
@@ -66,10 +80,22 @@ describe('Auth UseCase', () => {
   })
 
   it('Should return null if an invalid password is provided', async () => {
-    const { sut } = makeSut()
-
+    const { sut, loadUserByEmailRepositorySpy } = makeSut()
+    jest.spyOn(loadUserByEmailRepositorySpy, 'load').mockImplementation(jest.fn(async () => null))
     const email = 'valid_email@email'
     const accessToken = await sut.auth(email, 'pass')
     expect(accessToken).toBeNull()
+  })
+
+  it('Should call Encrypter with correct values', async () => {
+    const { sut, loadUserByEmailRepositorySpy, encrypterSpy } = makeSut()
+
+    jest.spyOn(encrypterSpy, 'compare').mockImplementation(jest.fn())
+
+    const email = 'valid_email@email'
+    const pass = 'pass'
+    const hashedPass = loadUserByEmailRepositorySpy.user.password
+    await sut.auth(email, pass)
+    expect(encrypterSpy.compare).toBeCalledWith(pass, hashedPass)
   })
 })
