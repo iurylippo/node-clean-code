@@ -57,10 +57,18 @@ describe('Auth UseCase', () => {
     expect(promise).rejects.toThrow()
   })
 
-  it('Should return null if loadUserByEmailRepository returns null', async () => {
+  it('Should return null if an invalid email is provided', async () => {
     const { sut } = makeSut()
 
     const email = 'invalid_email@email'
+    const accessToken = await sut.auth(email, 'pass')
+    expect(accessToken).toBeNull()
+  })
+
+  it('Should return null if an invalid password is provided', async () => {
+    const { sut } = makeSut()
+
+    const email = 'valid_email@email'
     const accessToken = await sut.auth(email, 'pass')
     expect(accessToken).toBeNull()
   })
