@@ -1,5 +1,6 @@
 import { MissingParamError } from '../../utils/errors/missing-param-error'
 import { AuthUseCase } from './auth-use-case'
+import { randomUUID } from 'crypto'
 
 const makeEncrypter = () => {
   class EncrypterSpy {
@@ -12,9 +13,23 @@ const makeEncrypter = () => {
   return encrypterSpy
 }
 
+const accessToken = randomUUID()
+const makeTokenGenerator = () => {
+  class TokenGeneratorSpy {
+    async generate (userId) {
+      return accessToken
+    }
+  }
+
+  const tokenGeneratorSpy = new TokenGeneratorSpy()
+
+  return tokenGeneratorSpy
+}
+
+const userId = randomUUID()
 const makeLoadUserByEmailRepository = () => {
   class LoadUserByEmailRepositorySpy {
-    user = { email: 'valid_email@email', password: 'hashed_pass' }
+    user = { id: userId, email: 'valid_email@email', password: 'hashed_pass' }
     async load (email) {
       return this.user
     }
@@ -27,13 +42,15 @@ const makeLoadUserByEmailRepository = () => {
 const makeSut = () => {
   const encrypterSpy = makeEncrypter()
   const loadUserByEmailRepositorySpy = makeLoadUserByEmailRepository()
+  const tokenGeneratorSpy = makeTokenGenerator()
 
-  const sut = new AuthUseCase(loadUserByEmailRepositorySpy, encrypterSpy)
+  const sut = new AuthUseCase(loadUserByEmailRepositorySpy, encrypterSpy, tokenGeneratorSpy)
 
   return {
     sut,
     loadUserByEmailRepositorySpy,
-    encrypterSpy
+    encrypterSpy,
+    tokenGeneratorSpy
   }
 }
 
@@ -107,5 +124,17 @@ describe('Auth UseCase', () => {
     const hashedPass = loadUserByEmailRepositorySpy.user.password
     await sut.auth(email, pass)
     expect(encrypterSpy.compare).toBeCalledWith(pass, hashedPass)
+  })
+
+  it('Should call TokenGenerator with user id', async () => {
+    const { sut, loadUserByEmailRepositorySpy, tokenGeneratorSpy } = makeSut()
+
+    const email = 'valid_email@email'
+    const pass = 'valid_pass'
+    jest.spyOn(tokenGeneratorSpy, 'generate').mockImplementation(jest.fn(async () => null))
+
+    await sut.auth(email, pass)
+
+    expect(tokenGeneratorSpy.generate).toBeCalledWith(loadUserByEmailRepositorySpy.user.id)
   })
 })
