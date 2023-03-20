@@ -13,6 +13,17 @@ const makeEncrypter = () => {
   return encrypterSpy
 }
 
+const makeUpdateAccessTokenRepository = () => {
+  class UpdateAccessTokenRepositorySpy {
+    async execute (userId, AccessToken) {
+      return true
+    }
+  }
+
+  const updateAccessTokenRepositorySpy = new UpdateAccessTokenRepositorySpy()
+  return updateAccessTokenRepositorySpy
+}
+
 const accessToken = randomUUID()
 const makeTokenGenerator = () => {
   class TokenGeneratorSpy {
@@ -43,11 +54,13 @@ const makeSut = () => {
   const encrypterSpy = makeEncrypter()
   const loadUserByEmailRepositorySpy = makeLoadUserByEmailRepository()
   const tokenGeneratorSpy = makeTokenGenerator()
+  const updateAccessTokenRepositorySpy = makeUpdateAccessTokenRepository()
 
   const sut = new AuthUseCase({
     loadUserByEmailRepository: loadUserByEmailRepositorySpy,
     encrypter: encrypterSpy,
-    tokenGenerator: tokenGeneratorSpy
+    tokenGenerator: tokenGeneratorSpy,
+    updateAccessTokenRepository: updateAccessTokenRepositorySpy
   }
   )
 
@@ -55,7 +68,8 @@ const makeSut = () => {
     sut,
     loadUserByEmailRepositorySpy,
     encrypterSpy,
-    tokenGeneratorSpy
+    tokenGeneratorSpy,
+    updateAccessTokenRepositorySpy
   }
 }
 
@@ -150,6 +164,19 @@ describe('Auth UseCase', () => {
     await sut.auth(email, pass)
 
     expect(tokenGeneratorSpy.generate).toBeCalledWith(loadUserByEmailRepositorySpy.user.id)
+  })
+
+  it('Should call UpdateAccessTokenRepository with correct values', async () => {
+    const { sut, updateAccessTokenRepositorySpy } = makeSut()
+
+    const email = 'valid_email@email'
+    const pass = 'valid_pass'
+
+    jest.spyOn(updateAccessTokenRepositorySpy, 'execute').mockImplementation(jest.fn())
+
+    await sut.auth(email, pass)
+
+    expect(updateAccessTokenRepositorySpy.execute).toBeCalledWith(userId, accessToken)
   })
 
   it('Should return an accessToken if credentials is valid', async () => {
