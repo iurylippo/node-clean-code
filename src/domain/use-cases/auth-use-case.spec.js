@@ -84,6 +84,15 @@ describe('Auth UseCase', () => {
     expect(loadUserByEmailRepositorySpy.load).toBeCalledWith(email)
   })
 
+  it('Should throw if no dependency provided in AuthUserCase', async () => {
+    const sut = new AuthUseCase()
+
+    const email = 'any_email@email'
+    const promise = sut.auth(email, 'pass')
+
+    expect(promise).rejects.toThrow()
+  })
+
   it('Should throw if no email is provided in loadUserByEmailRepository auth', async () => {
     const sut = new AuthUseCase({})
 
