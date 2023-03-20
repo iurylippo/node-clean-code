@@ -243,6 +243,7 @@ describe('Auth UseCase', () => {
     const loadUserByEmailRepository = makeLoadUserByEmailRepository()
     const encrypter = makeEncrypter()
     const tokenGenerator = makeTokenGenerator()
+    const updateAccessTokenRepository = makeUpdateAccessTokenRepository()
 
     const loadUserByEmailRepositoryError = new Error('loadUserByEmailRepository error')
     const loadUserByEmailRepositoryMock = jest.spyOn(loadUserByEmailRepository, 'load')
@@ -262,6 +263,12 @@ describe('Auth UseCase', () => {
       throw tokenGeneratorError
     }))
 
+    const updateAccessTokenRepositoryError = new Error('updateAccessTokenRepository error')
+    const updateAccessTokenRepositoryMock = jest.spyOn(updateAccessTokenRepository, 'execute')
+    updateAccessTokenRepositoryMock.mockImplementation(jest.fn(async () => {
+      throw updateAccessTokenRepositoryError
+    }))
+
     const suts = [
       {
         sut: new AuthUseCase({ loadUserByEmailRepository }),
@@ -277,6 +284,11 @@ describe('Auth UseCase', () => {
         sut: new AuthUseCase({ loadUserByEmailRepository, encrypter, tokenGenerator }),
         mockToRestore: tokenGeneratorMock,
         error: tokenGeneratorError
+      },
+      {
+        sut: new AuthUseCase({ loadUserByEmailRepository, encrypter, tokenGenerator, updateAccessTokenRepository }),
+        mockToRestore: updateAccessTokenRepositoryMock,
+        error: updateAccessTokenRepositoryError
       }
     ]
 
