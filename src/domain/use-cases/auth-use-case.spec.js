@@ -199,4 +199,59 @@ describe('Auth UseCase', () => {
       expect(promise).rejects.toThrow()
     }
   })
+
+  it('Should throw if any dependencies throws', async () => {
+    const loadUserByEmailRepository = makeLoadUserByEmailRepository()
+    const encrypter = makeEncrypter()
+    const tokenGenerator = makeTokenGenerator()
+
+    const loadUserByEmailRepositoryError = new Error('loadUserByEmailRepository error')
+    const loadUserByEmailRepositoryMock = jest.spyOn(loadUserByEmailRepository, 'load')
+    loadUserByEmailRepositoryMock.mockImplementation(jest.fn(async () => {
+      throw loadUserByEmailRepositoryError
+    }))
+
+    const encrypterError = new Error('encrypter error')
+    const encrypterMock = jest.spyOn(encrypter, 'compare')
+    encrypterMock.mockImplementation(jest.fn(async () => {
+      throw encrypterError
+    }))
+
+    const tokenGeneratorError = new Error('tokenGenerator error')
+    const tokenGeneratorMock = jest.spyOn(tokenGenerator, 'generate')
+    tokenGeneratorMock.mockImplementation(jest.fn(async () => {
+      throw tokenGeneratorError
+    }))
+
+    const suts = [
+      {
+        sut: new AuthUseCase({ loadUserByEmailRepository }),
+        mockToRestore: loadUserByEmailRepositoryMock,
+        error: loadUserByEmailRepositoryError
+      },
+      {
+        sut: new AuthUseCase({ loadUserByEmailRepository, encrypter }),
+        mockToRestore: encrypterMock,
+        error: encrypterError
+      },
+      {
+        sut: new AuthUseCase({ loadUserByEmailRepository, encrypter, tokenGenerator }),
+        mockToRestore: tokenGeneratorMock,
+        error: tokenGeneratorError
+      }
+    ]
+
+    const email = 'any_email@email'
+
+    for (const sutObject of suts) {
+      const { sut, mockToRestore, error } = sutObject
+
+      const promise = sut.auth(email, 'pass')
+      await expect(promise).rejects.toThrowError(error)
+
+      if (mockToRestore) {
+        await mockToRestore.mockRestore()
+      }
+    }
+  })
 })
